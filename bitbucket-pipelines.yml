@@ -1,0 +1,38 @@
+﻿image: microsoft/aspnetcore-build:2.0
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build app
+          script:
+            - cd Grotesque
+            - dotnet build Grotesque.csproj -c Release -o /app
+            - dotnet publish Grotesque.csproj -c Release -o /app
+          artifacts:
+            - /app/**
+      - step:
+          name: Docker
+          services:
+            - docker
+          script:
+            - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG} -f Grotesque/Dockerfile .
+            - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}
+            - docker logout ${ACR_URL}
+          
+    develop:
+      - step:
+          name: Build app
+          script:
+            - cd Grotesque
+            - dotnet build Grotesque.csproj -c Release -o /app
+            - dotnet publish Grotesque.csproj -c Release -o /app
+          artifacts:
+            - /app/**
+      - step:
+          name: Docker
+          services:
+            - docker
+          script:
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUID_NUMBER}
