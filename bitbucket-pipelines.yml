@@ -35,4 +35,4 @@ pipelines:
           services:
             - docker
           script:
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUID_NUMBER}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUILD_NUMBER}
