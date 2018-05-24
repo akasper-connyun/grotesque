@@ -5,6 +5,8 @@ pipelines:
     master:
       - step:
           name: Build app
+          caches:
+            - dotnetcore
           script:
             - cd Grotesque
             - dotnet build Grotesque.csproj -c Release -o /app
@@ -24,6 +26,8 @@ pipelines:
     develop:
       - step:
           name: Build app
+          caches:
+            - dotnetcore
           script:
             - cd Grotesque
             - dotnet build Grotesque.csproj -c Release -o /app
@@ -35,4 +39,4 @@ pipelines:
           services:
             - docker
           script:
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUILD_NUMBER}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUILD_NUMBER} -f Grotesque/Dockerfile .
