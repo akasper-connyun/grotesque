@@ -11,19 +11,16 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "api/v1/metadata/availability",
+      "launchUrl": "",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TSI_SP_CID": "SET ME",
+        "TSI_SP_SECRET": "SET ME",
+        "TSI_ENV_FQDN": "SET ME"
       }
     },
-    "Grotesque": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "api/values",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:62983/"
+    "K8s": {
+      "commandName": "Project"
     }
   }
 }
