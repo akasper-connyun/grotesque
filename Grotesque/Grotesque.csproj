@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+    <Version>0.0.1</Version>
+    <Authors>Alexander Kasper &lt;alexander.kasper@connyun.com&gt;</Authors>
+    <Company>connyun GmbH</Company>
   </PropertyGroup>
 
   <ItemGroup>
