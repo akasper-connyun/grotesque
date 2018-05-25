@@ -48,10 +48,10 @@ spec:
           - name: TSI_SP_CID
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-secret
+                name: grotesque-secret
                 key: tsi_serviceprincipial_clientid
           - name: TSI_SP_SECRET
             valueFrom:
               secretKeyRef:
-                name: {{ .Release.Name }}-secret
+                name: grotesque-secret
                 key: tsi_serviceprincipal_secret
