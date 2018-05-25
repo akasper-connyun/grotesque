@@ -5,8 +5,8 @@ namespace Grotesque.Util
 {
     public class Authentication
     {
-        private static string ApplicationClientId = "c5a4e5c6-0faf-47ff-b0d9-e3be81df496e";
-        private static string ApplicationClientSecret = "oQBYxeSKcHyUod291a74q8rEKQ6X2rlcI2jacOnI7cg=";
+        private static string ApplicationClientId = System.Environment.GetEnvironmentVariable("TSI_SP_CID");
+        private static string ApplicationClientSecret = System.Environment.GetEnvironmentVariable("TSI_SP_SECRET");
         private static string Tenant = "connyun.onmicrosoft.com";
 
         public static async Task<string> AcquireAccessTokenAsync()
