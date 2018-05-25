@@ -51,6 +51,7 @@ pipelines:
             name: connyun.azurecr.io/com.connyun/helm:2.7.2
             username: ${ACR_USERNAME}
             password: ${ACR_PASSWORD}
+            email: grotesque-build@connyun.com
           script:
             # setup helm client
             - helm init --client-only
