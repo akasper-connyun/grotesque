@@ -11,7 +11,7 @@ namespace Grotesque.Util
     public class TSApiClient
     {
         private HttpClient client = new HttpClient();
-        private const string TSEnvironmentFQDN = "078f5a28-fbff-4a2f-bc60-2fdab61a10c1.env.timeseries.azure.com";
+        private string TSEnvironmentFQDN = Environment.GetEnvironmentVariable("TSI_ENV_FQDN");
 
         private async void SetClientHeaders()
         {
@@ -57,10 +57,10 @@ namespace Grotesque.Util
             return await MakeAsyncPostRequest("events", JsonConvert.SerializeObject(query));
         }
 
-        public async Task<HttpResponseMessage> GetAggregations(JObject query)
+        public async Task<HttpResponseMessage> GetAggregates(JObject query)
         {
             SetClientHeaders();
-            return await MakeAsyncPostRequest("aggregations", JsonConvert.SerializeObject(query));
+            return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
         }
     }
 }

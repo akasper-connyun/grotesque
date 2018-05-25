@@ -47,6 +47,8 @@ spec:
           env:
           - name: TSI_SP_CID
             value: {{ .Values.app.tsi_serviceprincipal_clientid }}
+          - name: TSI_ENV_FQDN
+            value: {{ .Values.app.tsi_environment_fqdn }}
           - name: TSI_SP_SECRET
             valueFrom:
               secretKeyRef:
