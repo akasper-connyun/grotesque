@@ -46,10 +46,7 @@ spec:
               memory: {{ .Values.resources.requests.memory }}
           env:
           - name: TSI_SP_CID
-            valueFrom:
-              secretKeyRef:
-                name: grotesque-secret
-                key: tsi_serviceprincipial_clientid
+            value: {{ .Values.app.tsi_serviceprincipal_clientid }}
           - name: TSI_SP_SECRET
             valueFrom:
               secretKeyRef:
