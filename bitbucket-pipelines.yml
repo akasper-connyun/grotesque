@@ -84,4 +84,22 @@ pipelines:
             - export SEMVER=`git describe`
             # deploy helm chart to dev cluster
             - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${SEMVER} --install --wait
-      
+
+    feature/*:
+      - step:
+          name: Build app
+          caches:
+            - dotnetcore
+          script:
+            - dotnet build Grotesque/Grotesque.csproj -c Release -o app
+            - dotnet publish Grotesque/Grotesque.csproj -c Release -o app
+          artifacts:
+            - Grotesque/app/**
+      - step:
+          name: Docker
+          services:
+            - docker
+          script:
+            # set version from Git tag
+            - export SEMVER=`git describe`
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${SEMVER} -f Grotesque/Dockerfile Grotesque
