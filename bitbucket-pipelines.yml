@@ -8,18 +8,17 @@ pipelines:
           caches:
             - dotnetcore
           script:
-            - cd Grotesque
-            - dotnet build Grotesque.csproj -c Release -o /app
-            - dotnet publish Grotesque.csproj -c Release -o /app
+            - dotnet build Grotesque/Grotesque.csproj -c Release -o app
+            - dotnet publish Grotesque/Grotesque.csproj -c Release -o app
           artifacts:
-            - /app/**
+            - app/**
       - step:
           name: Docker
           services:
             - docker
           script:
             - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG} -f Grotesque/Dockerfile .
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG} -f Grotesque/Dockerfile Grotesque
             - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}
             - docker logout ${ACR_URL}
           
@@ -30,10 +29,10 @@ pipelines:
             - dotnetcore
           script:
             - cd Grotesque
-            - dotnet build Grotesque.csproj -c Release -o /app
-            - dotnet publish Grotesque.csproj -c Release -o /app
+            - dotnet build Grotesque.csproj -c Release -o app
+            - dotnet publish Grotesque.csproj -c Release -o app
           artifacts:
-            - /app/**
+            - app/**
       - step:
           name: Docker
           services:
@@ -42,7 +41,7 @@ pipelines:
             # set version from Git tag
             - export SEMVER=`git describe`
             - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${SEMVER} -f Grotesque/Dockerfile .
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${SEMVER} -f Grotesque/Dockerfile Grotesque
             - docker push connyun.azurecr.io/com.connyun/grotesque:${SEMVER}
             - docker logout ${ACR_URL}
       - step:
