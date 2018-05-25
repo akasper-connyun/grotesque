@@ -16,6 +16,8 @@ spec:
         release: {{ .Release.Name }}
         tier: {{ template "tier" }}
         bin: {{ template "bin" }}
+      annotations:
+        promtheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -54,3 +56,5 @@ spec:
               secretKeyRef:
                 name: grotesque-secret
                 key: tsi_serviceprincipal_secret
+          - name: ASPNETCORE_ENVIRONMENT
+            value: {{ .Values.app.asp_environment }}
