@@ -18,6 +18,7 @@ spec:
         bin: {{ template "bin" }}
       annotations:
         promtheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
+        prometheus.io/path: /grotesque/metrics
     spec:
       containers:
         - name: {{ .Chart.Name }}
