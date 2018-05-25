@@ -49,9 +49,8 @@ pipelines:
           name: Package helm chart & push to artifactory
           image:
             name: connyun.azurecr.io/com.connyun/helm:2.7.2
-            username: ${ACR_USERNAME}
-            password: ${ACR_PASSWORD}
-            email: grotesque-build@connyun.com
+            username: $ACR_USERNAME
+            password: $ACR_PASSWORD
           script:
             # setup helm client
             - helm init --client-only
@@ -70,8 +69,8 @@ pipelines:
           name: Continuous deployment to dev cluster
           image:
             name: connyun.azurecr.io/com.connyun/kubectl:1.8.10
-            username: ${ACR_USERNAME}
-            password: ${ACR_PASSWORD}
+            username: $ACR_USERNAME
+            password: $ACR_PASSWORD
           deployment: test
           script:
             - echo "${K8S_DEV_CA}" | base64 -d > .k8s-dev-ca.crt
