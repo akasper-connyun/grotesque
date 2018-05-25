@@ -39,4 +39,44 @@ pipelines:
           services:
             - docker
           script:
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BUILD_NUMBER} -f Grotesque/Dockerfile .
+            - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER} -f Grotesque/Dockerfile .
+            - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}
+            - docker logout ${ACR_URL}
+      - step:
+          name: Package helm chart & push to artifactory
+          script:
+            # setup helm client
+            - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+            - chmod +x get_helm.sh
+            - ./get_helm.sh --version v2.7.2 # version of tiller
+            - helm init --client-only
+            # setup artifactory cli
+            - curl -fL https://getcli.jfrog.io | bash
+            - mv ./jfrog /usr/local/bin/jfrog
+            - jfrog rt config artifactory --url=${ARTIFACTORY_URL} --apikey=${ARTIFACTORY_HELM_API_KEY}
+            # package helm chart
+            - sed --in-place "s/SET_ME/${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}/g" helm/grotesque/templates/deployment.yaml # set the docker image
+            - helm package --version "${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}" helm/grotesque/
+            # push packaged helm and build information chart to artifactory
+            - jfrog rt upload grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz helm/grotesque/grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
+      - step:
+          name: Continuous deployment to dev cluster
+          deployment: test
+          script:
+            # setup kubernetes client
+            - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl # get the latest version
+            - chmod +x ./kubectl
+            - mv ./kubectl /usr/local/bin/kubectl
+            - echo "${K8S_DEV_CA}" | base64 -d > .k8s-dev-ca.crt
+            - kubectl config set-cluster dev-cluster --embed-certs=true --server=${K8S_DEV_API_SERVER} --certificate-authority=.k8s-dev-ca.crt
+            - kubectl config set-credentials ${K8S_DEV_SA} --token=${K8S_DEV_TOKEN}
+            - kubectl config set-context dev --cluster=dev-cluster --user=${K8S_DEV_SA} --namespace=default
+            - kubectl config use-context dev
+            # setup helm client
+            - wget https://jfrog.bintray.com/helm/2.7.2-j/linux-amd64/helm -O /usr/local/bin/helm
+            - chmod +x /usr/local/bin/helm
+            - helm init --client-only
+            # deploy helm chart to dev cluster
+            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER} --install --wait
+      

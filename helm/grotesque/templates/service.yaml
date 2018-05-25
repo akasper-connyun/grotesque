@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "grotesque.fullname" . }}
+  labels:
+    app: {{ template "grotesque.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.externalPort }}
+      targetPort: {{ .Values.service.internalPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "grotesque.name" . }}
+    release: {{ .Release.Name }}
+    tier: {{ include "tier" . }}
+    bin: {{ include "bin" . }}

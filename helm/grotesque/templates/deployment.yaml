@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "grotesque.fullname" . }}
+  labels:
+    app: {{ template "grotesque.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "grotesque.name" . }}
+        release: {{ .Release.Name }}
+        tier: {{ template "tier" }}
+        bin: {{ template "bin" }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: connyun.azurecr.io/com.connyun/grotesque:SET_ME
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          env:
+          - name: TSI_SP_CID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: tsi_serviceprincipial_clientid
+          - name: TSI_SP_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: tsi_serviceprincipal_secret

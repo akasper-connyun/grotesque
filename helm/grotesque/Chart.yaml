@@ -1,0 +1,4 @@
+apiVersion: v1
+description: Helm chart for the Grotesque microservice
+name: grotesque
+# version: set with helm package --version <version> <chart_path>
