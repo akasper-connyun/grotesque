@@ -28,7 +28,7 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
   path: /grotesque
-promtheus:
+prometheus:
   scrape: true
 app:
   # Defined in Azure portal app registration
