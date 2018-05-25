@@ -11,7 +11,7 @@ pipelines:
             - dotnet build Grotesque/Grotesque.csproj -c Release -o app
             - dotnet publish Grotesque/Grotesque.csproj -c Release -o app
           artifacts:
-            - app/**
+            - Grotesque/app/**
       - step:
           name: Docker
           services:
@@ -28,11 +28,10 @@ pipelines:
           caches:
             - dotnetcore
           script:
-            - cd Grotesque
-            - dotnet build Grotesque.csproj -c Release -o app
-            - dotnet publish Grotesque.csproj -c Release -o app
+            - dotnet build Grotesque/Grotesque.csproj -c Release -o app
+            - dotnet publish Grotesque/Grotesque.csproj -c Release -o app
           artifacts:
-            - app/**
+            - Grotesque/app/**
       - step:
           name: Docker
           services:
