@@ -17,8 +17,7 @@ spec:
         tier: {{ template "tier" }}
         bin: {{ template "bin" }}
       annotations:
-        promtheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
-        prometheus.io/path: /grotesque/metrics
+        prometheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
