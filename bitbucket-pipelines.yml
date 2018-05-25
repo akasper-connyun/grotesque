@@ -39,35 +39,40 @@ pipelines:
           services:
             - docker
           script:
+            # set version from Git tag
+            - export SEMVER=`git describe`
             - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT} -f Grotesque/Dockerfile .
-            - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${SEMVER} -f Grotesque/Dockerfile .
+            - docker push connyun.azurecr.io/com.connyun/grotesque:${SEMVER}
             - docker logout ${ACR_URL}
       - step:
           name: Package helm chart & push to artifactory
+          image:
+            name: connyun.azurecr.io/com.connyun/helm:2.7.2
+            username: ${ACR_USERNAME}
+            password: ${ACR_PASSWORD}
           script:
             # setup helm client
-            - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-            - chmod +x get_helm.sh
-            - ./get_helm.sh --version v2.7.2 # version of tiller
             - helm init --client-only
             # setup artifactory cli
             - curl -fL https://getcli.jfrog.io | bash
             - mv ./jfrog /usr/local/bin/jfrog
             - jfrog rt config artifactory --url=${ARTIFACTORY_URL} --apikey=${ARTIFACTORY_HELM_API_KEY}
+            # set version from Git tag
+            - export SEMVER=`git describe`
             # package helm chart
-            - sed --in-place "s/SET_ME/${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}/g" helm/grotesque/templates/deployment.yaml # set the docker image
-            - helm package --version "${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}" helm/grotesque/
+            - sed --in-place "s/SET_ME/${SEMVER}/g" helm/grotesque/templates/deployment.yaml # set the docker image
+            - helm package --version "${SEMVER}" helm/grotesque/
             # push packaged helm and build information chart to artifactory
-            - jfrog rt upload grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz helm/grotesque/grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
+            - jfrog rt upload grotesque-${SEMVER}.tgz helm/grotesque/grotesque-${SEMVER}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
       - step:
           name: Continuous deployment to dev cluster
+          image:
+            name: connyun.azurecr.io/com.connyun/kubectl:1.8.10
+            username: ${ACR_USERNAME}
+            password: ${ACR_PASSWORD}
           deployment: test
           script:
-            # setup kubernetes client
-            - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl # get the latest version
-            - chmod +x ./kubectl
-            - mv ./kubectl /usr/local/bin/kubectl
             - echo "${K8S_DEV_CA}" | base64 -d > .k8s-dev-ca.crt
             - kubectl config set-cluster dev-cluster --embed-certs=true --server=${K8S_DEV_API_SERVER} --certificate-authority=.k8s-dev-ca.crt
             - kubectl config set-credentials ${K8S_DEV_SA} --token=${K8S_DEV_TOKEN}
@@ -77,6 +82,8 @@ pipelines:
             - wget https://jfrog.bintray.com/helm/2.7.2-j/linux-amd64/helm -O /usr/local/bin/helm
             - chmod +x /usr/local/bin/helm
             - helm init --client-only
+            # set version from Git tag
+            - export SEMVER=`git describe`
             # deploy helm chart to dev cluster
-            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT} --install --wait
+            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${SEMVER} --install --wait
       
