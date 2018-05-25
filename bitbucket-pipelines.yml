@@ -40,8 +40,8 @@ pipelines:
             - docker
           script:
             - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
-            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER} -f Grotesque/Dockerfile .
-            - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT} -f Grotesque/Dockerfile .
+            - docker push connyun.azurecr.io/com.connyun/grotesque:${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}
             - docker logout ${ACR_URL}
       - step:
           name: Package helm chart & push to artifactory
@@ -56,10 +56,10 @@ pipelines:
             - mv ./jfrog /usr/local/bin/jfrog
             - jfrog rt config artifactory --url=${ARTIFACTORY_URL} --apikey=${ARTIFACTORY_HELM_API_KEY}
             # package helm chart
-            - sed --in-place "s/SET_ME/${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}/g" helm/grotesque/templates/deployment.yaml # set the docker image
-            - helm package --version "${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}" helm/grotesque/
+            - sed --in-place "s/SET_ME/${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}/g" helm/grotesque/templates/deployment.yaml # set the docker image
+            - helm package --version "${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}" helm/grotesque/
             # push packaged helm and build information chart to artifactory
-            - jfrog rt upload grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz helm/grotesque/grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
+            - jfrog rt upload grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz helm/grotesque/grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
       - step:
           name: Continuous deployment to dev cluster
           deployment: test
@@ -78,5 +78,5 @@ pipelines:
             - chmod +x /usr/local/bin/helm
             - helm init --client-only
             # deploy helm chart to dev cluster
-            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${BITBUCKET_TAG}-${BITBUCKET_BUILD_NUMBER} --install --wait
+            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${BITBUCKET_BRANCH}-${BITBUCKET_COMMIT} --install --wait
       
