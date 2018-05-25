@@ -56,5 +56,11 @@ namespace Grotesque.Util
             SetClientHeaders();
             return await MakeAsyncPostRequest("events", JsonConvert.SerializeObject(query));
         }
+
+        public async Task<HttpResponseMessage> GetAggregations(JObject query)
+        {
+            SetClientHeaders();
+            return await MakeAsyncPostRequest("aggregations", JsonConvert.SerializeObject(query));
+        }
     }
 }
