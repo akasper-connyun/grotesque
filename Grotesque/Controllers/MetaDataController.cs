@@ -1,9 +1,9 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Grotesque.Models;
 using Grotesque.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 namespace Grotesque.Controllers
 {
@@ -30,7 +30,7 @@ namespace Grotesque.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> GetMetaData([FromBody] Metadata metadata)
+        public async Task<IActionResult> GetMetaData([FromBody] JObject metadata)
         {
             if (metadata == null)
             {

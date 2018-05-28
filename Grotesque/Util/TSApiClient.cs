@@ -1,5 +1,4 @@
-﻿using Grotesque.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Text;
 using System.Net.Http;
@@ -40,7 +39,7 @@ namespace Grotesque.Util
             return await client.PostAsync(CreateUri(path), httpContent);
         }
 
-        public async Task<HttpResponseMessage> GetMetadata(Metadata metadata)
+        public async Task<HttpResponseMessage> GetMetadata(JObject metadata)
         {
             return await MakeAsyncPostRequest("metadata", JsonConvert.SerializeObject(metadata));
         }
