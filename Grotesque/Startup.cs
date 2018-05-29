@@ -47,7 +47,7 @@ namespace Grotesque
             app.UseSwaggerUI(c =>
             {
                 // This setup does not work in local mode, remove 'grotesque' for this
-                c.SwaggerEndpoint("grotesque/swagger/v1/swagger.json", "Grotesque API V1");
+                c.SwaggerEndpoint("/grotesque/swagger/v1/swagger.json", "Grotesque API V1");
             });
 
             app.UseMvc();
