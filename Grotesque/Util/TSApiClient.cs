@@ -12,12 +12,12 @@ namespace Grotesque.Util
         private HttpClient client = new HttpClient();
         private string TSEnvironmentFQDN = Environment.GetEnvironmentVariable("TSI_ENV_FQDN");
 
-        private async void SetClientHeaders()
+        private void SetClientHeaders()
         {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
             client.DefaultRequestHeaders.Add("x-ms-client-application-name", "Grotesque");
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", await Authentication.AcquireAccessTokenAsync());
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Authentication.AcquireAccessTokenAsync().Result);
         }
 
         private Uri CreateUri(string path)
