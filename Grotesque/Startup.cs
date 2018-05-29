@@ -20,7 +20,16 @@ namespace Grotesque
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Grotesque API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info {
+                    Title = "Grotesque API",
+                    Version = "v1",
+                    Description = "Timeseries Insights proxy",
+                    Contact = new Contact
+                    {
+                        Name = "Alexander Kasper",
+                        Email = "alexander.kasper@connyun.com"
+                    }
+                });
             });
             services.AddMvc();
         }
@@ -37,7 +46,8 @@ namespace Grotesque
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Grotesque API V1");
+                // This setup does not work in local mode, remove 'grotesque' for this
+                c.SwaggerEndpoint("grotesque/swagger/v1/swagger.json", "Grotesque API V1");
             });
 
             app.UseMvc();
