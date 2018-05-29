@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
+using Grotesque.Models;
 using Grotesque.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -37,6 +35,19 @@ namespace Grotesque.Controllers
 
             _logger.LogWarning(response.ReasonPhrase);
             return BadRequest();
+        }
+
+        [HttpPost("{deviceUrn}/{elementName}")]
+        public async Task<IActionResult> GetEvents(string deviceUrn, string elementname, [FromBody]TopDataPointsQuery topDataPointsQuery)
+        {
+            HttpResponseMessage responseMessage =  await tsApiClient.GetLastDataPoints(topDataPointsQuery.from, topDataPointsQuery.to, deviceUrn, elementname, topDataPointsQuery.count);
+            if (responseMessage.IsSuccessStatusCode)
+            {
+                return Content(await responseMessage.Content.ReadAsStringAsync(), "application/json");
+            }
+
+            _logger.LogWarning($"Reason: {responseMessage.ReasonPhrase} - {await responseMessage.Content.ReadAsStringAsync()}");
+            return new BadRequestObjectResult(await responseMessage.Content.ReadAsStringAsync());
         }
     }
 }

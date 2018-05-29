@@ -4,6 +4,7 @@ using System.Text;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using Grotesque.Models;
 
 namespace Grotesque.Util
 {
@@ -60,6 +61,99 @@ namespace Grotesque.Util
         {
             SetClientHeaders();
             return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
+        }
+
+        /**
+         {
+	        "searchSpan": {
+		        "from": {
+			        "dateTime": "2018-05-01T00:00:00.000Z"
+		        },
+		        "to": {
+			        "dateTime": "2018-05-31T23:59:59.000Z"
+		        }
+	        },
+	        "predicate": {
+		        "and": [
+			        {
+				        "eq": {
+					        "left": {
+						        "property": "deviceurn",
+						        "type": "String"
+					        },
+					        "right": "urn:cde:fairs:fairs:MachineRoller:003001"
+				        }
+			        },
+			        {
+				        "eq": {
+					        "left": {
+						        "property": "elementname",
+						        "type": "String"
+					        },
+					        "right": "Motor.Power"
+				        }
+			        }
+		        ]
+	        },
+	        "top": {
+		        "sort": [{
+			        "input": {
+				        "builtInProperty": "$ts"
+			        },
+			        "order": "Asc"
+		        }],
+		        "count": 1000
+	        }
+        }
+        */
+        public async Task<HttpResponseMessage> GetLastDataPoints(DateTime from, DateTime to, string deviceUrn, string elementName, int number = 1000)
+        {
+            SetClientHeaders();
+            SearchSpan searchSpan = new SearchSpan(from, to);
+            JObject query = new JObject(
+                new JProperty("searchSpan", JObject.FromObject(searchSpan)), 
+                new JProperty("predicate", generatePredicate(deviceUrn, elementName)), 
+                new JProperty("top", generateTop(number))
+            );
+
+            return await MakeAsyncPostRequest("events", JsonConvert.SerializeObject(query));
+        }
+
+        private JObject generatePredicate(string deviceUrn, string elementName)
+        {
+            return new JObject(
+                new JProperty("and", 
+                    new JObject(
+                        new JProperty("eq", generateEqStringProperty("deviceurn", deviceUrn))
+                    ),
+                    new JObject(
+                        new JProperty("eq", generateEqStringProperty("elementname", elementName))
+                    )
+                )
+            );
+        }
+
+        private JObject generateEqStringProperty(string property, string value)
+        {
+            return new JObject(
+                new JProperty("left", new JObject(
+                    new JProperty("property", property), 
+                    new JProperty("type", "String"))
+                ),
+                new JProperty("right", value)
+            );
+        }
+
+        private JObject generateTop(int number)
+        {
+            return new JObject(
+                new JProperty("sort", new JArray(
+                    new JObject(
+                        new JProperty("input", new JObject(
+                            new JProperty("builtInProperty", "$ts"))),
+                        new JProperty("order", "Desc")))),
+                new JProperty("count", number)
+            );
         }
     }
 }
