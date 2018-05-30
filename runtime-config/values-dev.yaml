@@ -26,9 +26,10 @@ readinessProbe:
 ingress:
   enabled: true
   path: /api/grotesque
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
 prometheus:
   scrape: true
-  path: /api/grotesque/metrics
 app:
   # Defined in Azure portal app registration
   tsi_serviceprincipal_clientid: c5a4e5c6-0faf-47ff-b0d9-e3be81df496e
