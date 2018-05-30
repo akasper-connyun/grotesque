@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 namespace Grotesque.Controllers
 {
     [Produces("application/json")]
-    [Route("api/v1/[controller]")]
+    [Route("v1/[controller]")]
     public class EventsController : Controller
     {
         private readonly ILogger _logger;
@@ -38,9 +38,9 @@ namespace Grotesque.Controllers
         }
 
         [HttpPost("{deviceUrn}/{elementName}")]
-        public async Task<IActionResult> GetEvents(string deviceUrn, string elementname, [FromBody]TopDataPointsQuery topDataPointsQuery)
+        public async Task<IActionResult> GetEvents(string deviceUrn, string elementName, [FromBody]TopDataPointsQuery topDataPointsQuery)
         {
-            HttpResponseMessage responseMessage =  await tsApiClient.GetLastDataPoints(topDataPointsQuery.from, topDataPointsQuery.to, deviceUrn, elementname, topDataPointsQuery.count);
+            HttpResponseMessage responseMessage =  await tsApiClient.GetLastDataPoints(topDataPointsQuery.from, topDataPointsQuery.to, deviceUrn, elementName, topDataPointsQuery.count);
             if (responseMessage.IsSuccessStatusCode)
             {
                 return Content(await responseMessage.Content.ReadAsStringAsync(), "application/json");

@@ -16,20 +16,19 @@ resources:
     cpu: 50m
     memory: 64Mi
 livenessProbe:
-  initialDelaySeconds: 30
+  initialDelaySeconds: 10
   periodSeconds: 10
   failureThreshold: 3
 readinessProbe:
-  initialDelaySeconds: 10
+  initialDelaySeconds: 5
   periodSeconds: 5
   failureThreshold: 1
 ingress:
   enabled: true
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  path: /grotesque
+  path: /api/grotesque
 prometheus:
   scrape: true
+  path: /api/grotesque/metrics
 app:
   # Defined in Azure portal app registration
   tsi_serviceprincipal_clientid: c5a4e5c6-0faf-47ff-b0d9-e3be81df496e

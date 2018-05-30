@@ -18,6 +18,7 @@ spec:
         bin: {{ template "bin" }}
       annotations:
         prometheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
+        prometheus.io/path: {{ .Values.prometheus.path | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
@@ -27,14 +28,14 @@ spec:
             - containerPort: {{ .Values.service.internalPort }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/grotesque
               port: {{ .Values.service.internalPort }}
             initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /api/grotesque
               port: {{ .Values.service.internalPort }}
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}

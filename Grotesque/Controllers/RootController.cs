@@ -2,7 +2,7 @@
 
 namespace Grotesque.Controllers
 {
-    [Route("/")]
+    [Route("")]
     public class RootController : Controller
     {
         [HttpGet]

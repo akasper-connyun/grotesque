@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 namespace Grotesque.Controllers
 {
     [Produces("application/json")]
-    [Route("api/v1/[controller]")]
+    [Route("v1/[controller]")]
     public class AggregatesController : Controller
     {
         private readonly ILogger _logger;
