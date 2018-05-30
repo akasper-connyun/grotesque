@@ -11,7 +11,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "",
+      "launchUrl": "v1/metadata/availability",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "TSI_SP_CID": "SET ME",
