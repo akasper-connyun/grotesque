@@ -1,9 +1,11 @@
-﻿using System.Net.Http;
+﻿using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Grotesque.Models;
 using Grotesque.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Grotesque.Controllers
@@ -38,16 +40,28 @@ namespace Grotesque.Controllers
         }
 
         [HttpPost("{deviceUrn}/{elementName}")]
-        public async Task<IActionResult> GetEvents(string deviceUrn, string elementName, [FromBody]TopDataPointsQuery topDataPointsQuery)
+        public async Task<IActionResult> GetEvents(string deviceUrn, string elementName, [FromBody] TopDataPointsQuery topDataPointsQuery)
         {
-            HttpResponseMessage responseMessage =  await tsApiClient.GetLastDataPoints(topDataPointsQuery.from, topDataPointsQuery.to, deviceUrn, elementName, topDataPointsQuery.count);
-            if (responseMessage.IsSuccessStatusCode)
+            if (ModelState.IsValid)
             {
-                return Content(await responseMessage.Content.ReadAsStringAsync(), "application/json");
-            }
+                HttpResponseMessage responseMessage = await tsApiClient.GetLastDataPoints(topDataPointsQuery.from, topDataPointsQuery.to, deviceUrn, elementName, topDataPointsQuery.count);
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    return Content(await responseMessage.Content.ReadAsStringAsync(), "application/json");
+                }
 
-            _logger.LogWarning($"Reason: {responseMessage.ReasonPhrase} - {await responseMessage.Content.ReadAsStringAsync()}");
-            return new BadRequestObjectResult(await responseMessage.Content.ReadAsStringAsync());
+                _logger.LogWarning($"Reason: {responseMessage.ReasonPhrase} - {await responseMessage.Content.ReadAsStringAsync()}");
+                return new BadRequestObjectResult(await responseMessage.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                var errorMessages = JsonConvert.SerializeObject(ModelState.Values
+                    .SelectMany(value => value.Errors)
+                    .Select(error => error.Exception?.Message ?? error.ErrorMessage));
+
+                _logger.LogWarning($"JSON parsing errors: {errorMessages}");
+                return new BadRequestObjectResult(errorMessages);
+            }
         }
     }
 }
