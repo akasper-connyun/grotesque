@@ -99,22 +99,15 @@ namespace Grotesque.Controllers
             if (aggregate == null)
                 return NotFound();
 
-            IList<MetricValue> result = new List<MetricValue>();
             JArray dimensions = (JArray)aggregate.GetValue("dimension");
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray measures = (JArray)agg.GetValue("measures");
-            for (int i = 0; i < dimensions.Count; ++i)
-            {
-                string dimension = (string) dimensions[i];
-                JArray measure = (JArray)measures[i];
-                MetricValue resultEntry = new MetricValue
+            var result = dimensions.Zip(measures, (d, m) => (d, m))
+                .Select((entry) => new MetricValue
                 {
-                    metric = dimension,
-                    value = measure[0].First
-                };
-               
-                result.Add(resultEntry);
-            }
+                    metric = (string)entry.d,
+                    value = entry.m?.Last
+                });
 
             return Content(JsonConvert.SerializeObject(result), "application/json");
         }
@@ -130,22 +123,15 @@ namespace Grotesque.Controllers
             if (aggregate == null)
                 return NotFound();
 
-            IList<TimestampValue> result = new List<TimestampValue>();
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray dimensions = (JArray)agg.GetValue("dimension");
             JArray measures = (JArray)agg.GetValue("measures")?.First;
-            for (int i = 0; i < dimensions.Count; ++i)
-            {
-                DateTime dimension = (DateTime)dimensions[i];
-                JArray measure = (JArray)measures[i];
-                TimestampValue resultEntry = new TimestampValue
+            var result = dimensions.Zip(measures, (d, m) => (d, m))
+                .Select((entry) => new TimestampValue
                 {
-                    timestamp = dimension,
-                    value = measure?.First
-                };
-
-                result.Add(resultEntry);
-            }
+                    timestamp = (DateTime)entry.d,
+                    value = entry.m
+                });
 
             return Content(JsonConvert.SerializeObject(result), "application/json");
         }
