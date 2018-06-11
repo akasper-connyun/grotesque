@@ -106,8 +106,9 @@ namespace Grotesque.Controllers
                 .Select((entry) => new MetricValue
                 {
                     metric = (string)entry.d,
-                    value = entry.m?.Last
-                });
+                    value = entry.m?.Last?.First
+                }
+            );
 
             return Content(JsonConvert.SerializeObject(result), "application/json");
         }
@@ -130,7 +131,7 @@ namespace Grotesque.Controllers
                 .Select((entry) => new TimestampValue
                 {
                     timestamp = (DateTime)entry.d,
-                    value = entry.m
+                    value = entry.m?.First
                 });
 
             return Content(JsonConvert.SerializeObject(result), "application/json");
