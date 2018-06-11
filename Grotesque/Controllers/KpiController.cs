@@ -24,7 +24,7 @@ namespace Grotesque.Controllers
 
         public KpiController(ILogger<KpiController> logger) => _logger = logger;
 
-        [HttpGet("latest/{deviceUrn}")]
+        [HttpGet("last/{deviceUrn}")]
         [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(IEnumerable<LabelValue>))]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, Type = typeof(JObject))]
         public async Task<IActionResult> GetLastKpisForDevice(string deviceUrn, [FromQuery] FromToQueryParameters queryParameters)
@@ -56,17 +56,17 @@ namespace Grotesque.Controllers
             return new BadRequestObjectResult(ModelState);
         }
 
-        [HttpGet("{deviceUrn}/{kpi}")]
+        [HttpGet("avg/{deviceUrn}/{metric}")]
         [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(IEnumerable<TimestampValue>))]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, Type = typeof(JObject))]
-        public async Task<IActionResult> GetKpisForDeviceAndDimension(string deviceUrn, string kpi, [FromQuery] FromToSizeQueryParamters queryParameters)
+        public async Task<IActionResult> GetKpisForDeviceAndDimension(string deviceUrn, string metric, [FromQuery] FromToSizeQueryParameters queryParameters)
         {
             if (ModelState.IsValid)
             {
                 int diffMinutes = queryParameters.diffMinutes();
                 if (diffMinutes > 0)
                 {
-                    HttpResponseMessage responseMessage = await tsApiClient.GetKpiForDevice(deviceUrn, kpi, queryParameters.from, queryParameters.to, queryParameters.size);
+                    HttpResponseMessage responseMessage = await tsApiClient.GetKpiForDevice(deviceUrn, metric, queryParameters.from, queryParameters.to, queryParameters.size);
                     if (responseMessage.IsSuccessStatusCode)
                     {
                         return await MapKpiQueryResult(responseMessage);
@@ -130,8 +130,6 @@ namespace Grotesque.Controllers
             if (aggregate == null)
                 return NotFound();
 
-            //return Content(queryResultString, "application/json");
-
             IList<TimestampValue> result = new List<TimestampValue>();
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray dimensions = (JArray)agg.GetValue("dimension");
@@ -166,7 +164,7 @@ namespace Grotesque.Controllers
         }
     }
 
-    public class FromToSizeQueryParamters : FromToQueryParameters
+    public class FromToSizeQueryParameters : FromToQueryParameters
     {
         [BindRequired]
         public string size { get; set; }
