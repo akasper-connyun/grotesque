@@ -25,7 +25,7 @@ namespace Grotesque.Controllers
         public KpiController(ILogger<KpiController> logger) => _logger = logger;
 
         [HttpGet("last/{deviceUrn}")]
-        [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(IEnumerable<LabelValue>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Type = typeof(IEnumerable<MetricValue>))]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, Type = typeof(JObject))]
         public async Task<IActionResult> GetLastKpisForDevice(string deviceUrn, [FromQuery] FromToQueryParameters queryParameters)
         {
@@ -44,7 +44,7 @@ namespace Grotesque.Controllers
                     return new BadRequestObjectResult(await responseMessage.Content.ReadAsStringAsync());
                 }
 
-                ModelState.AddModelError("to", "to value needs to be bigger than from value");
+                ModelState.AddModelError("to", "to value needs to be greater than from value");
                 var errorMessages = JsonConvert.SerializeObject(ModelState.Values
                     .SelectMany(value => value.Errors)
                     .Select(error => error.Exception?.Message ?? error.ErrorMessage));
@@ -76,7 +76,7 @@ namespace Grotesque.Controllers
                     return new BadRequestObjectResult(await responseMessage.Content.ReadAsStringAsync());
                 }
 
-                ModelState.AddModelError("to", "to value needs to be bigger than from value");
+                ModelState.AddModelError("to", "to value needs to be greater than from value");
                 var errorMessages = JsonConvert.SerializeObject(ModelState.Values
                     .SelectMany(value => value.Errors)
                     .Select(error => error.Exception?.Message ?? error.ErrorMessage));
@@ -99,7 +99,7 @@ namespace Grotesque.Controllers
             if (aggregate == null)
                 return NotFound();
 
-            IList<LabelValue> result = new List<LabelValue>();
+            IList<MetricValue> result = new List<MetricValue>();
             JArray dimensions = (JArray)aggregate.GetValue("dimension");
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray measures = (JArray)agg.GetValue("measures");
@@ -107,9 +107,9 @@ namespace Grotesque.Controllers
             {
                 string dimension = (string) dimensions[i];
                 JArray measure = (JArray)measures[i];
-                LabelValue resultEntry = new LabelValue
+                MetricValue resultEntry = new MetricValue
                 {
-                    label = dimension,
+                    metric = dimension,
                     value = measure[0].First
                 };
                

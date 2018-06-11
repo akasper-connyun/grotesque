@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Grotesque.Models
 {
-    public class LabelValue
+    public class MetricValue
     {
-        public string label { get; set; }
+        public string metric { get; set; }
         public Object value { get; set; }
     }
 }
