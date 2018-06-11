@@ -18,7 +18,6 @@ spec:
         bin: {{ template "bin" }}
       annotations:
         prometheus.io/scrape: {{ .Values.prometheus.scrape | quote }}
-        prometheus.io/path: {{ .Values.prometheus.path | quote }}
     spec:
       containers:
         - name: {{ .Chart.Name }}

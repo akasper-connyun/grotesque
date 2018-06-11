@@ -11,12 +11,12 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "v1/metadata/availability",
+      "launchUrl": "doc",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "TSI_SP_CID": "SET ME",
-        "TSI_SP_SECRET": "SET ME",
-        "TSI_ENV_FQDN": "SET ME"
+        "TSI_SP_CID": "c5a4e5c6-0faf-47ff-b0d9-e3be81df496e",
+        "TSI_SP_SECRET": "oQBYxeSKcHyUod291a74q8rEKQ6X2rlcI2jacOnI7cg=",
+        "TSI_ENV_FQDN": "078f5a28-fbff-4a2f-bc60-2fdab61a10c1.env.timeseries.azure.com"
       }
     },
     "K8s": {

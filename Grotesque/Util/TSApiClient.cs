@@ -21,6 +21,64 @@ namespace Grotesque.Util
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Authentication.AcquireAccessTokenAsync().Result);
         }
 
+        internal async Task<HttpResponseMessage> GetLastKpisForDevice(string deviceUrn, DateTime from, DateTime to, string size)
+        {
+            SearchSpan searchSpan = new SearchSpan(from, to);
+            JObject query = new JObject(
+                new JProperty("searchSpan", JObject.FromObject(searchSpan)),
+                new JProperty("predicate", generateDevicePredicate(deviceUrn)),
+                new JProperty("aggregates", generateLastValueAggregates("elementname", "String", 100, size))
+            );
+
+            return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
+        }
+
+        internal async Task<HttpResponseMessage> GetKpiForDevice(string deviceUrn, string kpi, DateTime from, DateTime to, string size)
+        {
+            SearchSpan searchSpan = new SearchSpan(from, to);
+            JObject query = new JObject(
+                new JProperty("searchSpan", JObject.FromObject(searchSpan)),
+                new JProperty("predicate", generateDeviceElementPredicate(deviceUrn, kpi)),
+                new JProperty("aggregates", generateAvgAggregates("elementname", 100, size))
+            );
+
+            return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
+        }
+
+        private JArray generateLastValueAggregates(string splitBy, string splitByType, int take, string bucketSize)
+        {
+            LastMeasure lastValueMeasure = new LastMeasure("value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
+            return generateAggregates(splitBy, splitByType, take, bucketSize, JObject.FromObject(lastValueMeasure));
+        }
+
+        private JArray generateAvgAggregates(string kpi, int take, string bucketSize)
+        {
+            AvgMeasure avgMeasure = new AvgMeasure("value.Value", "Double");
+            return generateAggregates(kpi, "String", take, bucketSize, JObject.FromObject(avgMeasure));
+        }
+
+        private JArray generateAggregates(string splitBy, string splitByType, int take, string bucketSize, params JObject[] measures)
+        {
+            AggregatesDimension dimension = new AggregatesDimension(splitBy, splitByType, take);
+            DateDimension dateDimension = new DateDimension("$ts", bucketSize);
+
+            LastMeasure lastValueMeasure = new LastMeasure("value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
+
+            JArray aggregates = new JArray(
+                new JObject(
+                    new JProperty("dimension", JObject.FromObject(dimension)),
+                    new JProperty("aggregate",
+                        new JObject(
+                            new JProperty("dimension", JObject.FromObject(dateDimension)),
+                            new JProperty("measures", measures)
+                        )
+                    )
+                )
+            );
+
+            return aggregates;
+        }
+
         private Uri CreateUri(string path)
         {
             Uri uri = new UriBuilder("https", TSEnvironmentFQDN)
@@ -53,13 +111,11 @@ namespace Grotesque.Util
 
         public async Task<HttpResponseMessage> GetEvents(JObject query)
         {
-            SetClientHeaders();
             return await MakeAsyncPostRequest("events", JsonConvert.SerializeObject(query));
         }
 
         public async Task<HttpResponseMessage> GetAggregates(JObject query)
         {
-            SetClientHeaders();
             return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
         }
 
@@ -108,18 +164,17 @@ namespace Grotesque.Util
         */
         public async Task<HttpResponseMessage> GetLastDataPoints(DateTime from, DateTime to, string deviceUrn, string elementName, int number = 1000)
         {
-            SetClientHeaders();
             SearchSpan searchSpan = new SearchSpan(from, to);
             JObject query = new JObject(
                 new JProperty("searchSpan", JObject.FromObject(searchSpan)), 
-                new JProperty("predicate", generatePredicate(deviceUrn, elementName)), 
+                new JProperty("predicate", generateDeviceElementPredicate(deviceUrn, elementName)), 
                 new JProperty("top", generateTop(number))
             );
 
             return await MakeAsyncPostRequest("events", JsonConvert.SerializeObject(query));
         }
 
-        private JObject generatePredicate(string deviceUrn, string elementName)
+        private JObject generateDeviceElementPredicate(string deviceUrn, string elementName)
         {
             return new JObject(
                 new JProperty("and", 
@@ -131,6 +186,11 @@ namespace Grotesque.Util
                     )
                 )
             );
+        }
+
+        private JObject generateDevicePredicate(string deviceUrn)
+        {
+            return new JObject(new JProperty("eq", generateEqStringProperty("deviceurn", deviceUrn)));
         }
 
         private JObject generateEqStringProperty(string property, string value)
