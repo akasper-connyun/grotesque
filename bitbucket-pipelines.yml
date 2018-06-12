@@ -146,7 +146,7 @@ pipelines:
             # set version from Git tag
             - export SEMVER=`git describe`
             # deploy helm chart to dev cluster
-            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${SEMVER} --install --wait
+            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-staging.yaml --version ${SEMVER} --install --wait
 
     feature/*:
       - step:
