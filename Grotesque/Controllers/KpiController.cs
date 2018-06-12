@@ -103,10 +103,13 @@ namespace Grotesque.Controllers
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray measures = (JArray)agg.GetValue("measures");
             var result = dimensions.Zip(measures, (d, m) => (d, m))
-                .Select((entry) => new MetricValue
-                {
-                    metric = (string)entry.d,
-                    value = entry.m?.Last?.First
+                .Select((entry) => {
+                    JToken v = entry.m.Type == JTokenType.Null ? null : entry.m.Last;
+                    return new MetricValue
+                    {
+                        metric = (string)entry.d,
+                        value = v.Type == JTokenType.Null ? null : v.First
+                    };
                 }
             );
 
