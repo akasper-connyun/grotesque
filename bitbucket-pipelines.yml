@@ -85,6 +85,69 @@ pipelines:
             # deploy helm chart to dev cluster
             - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${SEMVER} --install --wait
 
+    release/*:
+      - step:
+          name: Build app
+          caches:
+            - dotnetcore
+          script:
+            - dotnet build Grotesque/Grotesque.csproj -c Release -o app
+            - dotnet publish Grotesque/Grotesque.csproj -c Release -o app
+          artifacts:
+            - Grotesque/app/**
+      - step:
+          name: Docker
+          services:
+            - docker
+          script:
+            # set version from Git tag
+            - export SEMVER=`git describe`
+            - docker login -u ${ACR_USERNAME} -p ${ACR_PASSWORD} ${ACR_URL}
+            - docker build -t connyun.azurecr.io/com.connyun/grotesque:${SEMVER} -f Grotesque/Dockerfile Grotesque
+            - docker push connyun.azurecr.io/com.connyun/grotesque:${SEMVER}
+            - docker logout ${ACR_URL}
+      - step:
+          name: Package helm chart & push to artifactory
+          script:
+            # setup helm client
+            - curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
+            - chmod +x get_helm.sh
+            - ./get_helm.sh --version v2.7.2 # version of tiller
+            # setup helm client
+            - helm init --client-only
+            # setup artifactory cli
+            - curl -fL https://getcli.jfrog.io | bash
+            - mv ./jfrog /usr/local/bin/jfrog
+            - jfrog rt config artifactory --url=${ARTIFACTORY_URL} --apikey=${ARTIFACTORY_HELM_API_KEY}
+            # set version from Git tag
+            - export SEMVER=`git describe`
+            # package helm chart
+            - sed --in-place "s/SET_ME/${SEMVER}/g" helm/grotesque/templates/deployment.yaml # set the docker image
+            - helm package --version "${SEMVER}" helm/grotesque/
+            # push packaged helm and build information chart to artifactory
+            - jfrog rt upload grotesque-${SEMVER}.tgz helm/grotesque/grotesque-${SEMVER}.tgz --build-name=${BITBUCKET_REPO_SLUG} --build-number=${BITBUCKET_BUILD_NUMBER}
+      - step:
+          name: Continuous deployment to staging cluster
+          deployment: staging
+          script:
+            # setup kubernetes client
+            - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl # get the latest version
+            - chmod +x ./kubectl
+            - mv ./kubectl /usr/local/bin/kubectl
+            - echo "${K8S_STAGING_CA}" | base64 -d > .k8s-staging-ca.crt
+            - kubectl config set-cluster staging-cluster --embed-certs=true --server=${K8S_STAGING_API_SERVER} --certificate-authority=.k8s-staging-ca.crt
+            - kubectl config set-credentials ${K8S_STAGING_SA} --token=${K8S_STAGING_TOKEN}
+            - kubectl config set-context staging --cluster=staging-cluster --user=${K8S_STAGING_SA} --namespace=default
+            - kubectl config use-context staging
+            # setup helm client
+            - wget https://jfrog.bintray.com/helm/2.7.2-j/linux-amd64/helm -O /usr/local/bin/helm
+            - chmod +x /usr/local/bin/helm
+            - helm init --client-only
+            # set version from Git tag
+            - export SEMVER=`git describe`
+            # deploy helm chart to dev cluster
+            - helm upgrade grotesque ${ARTIFACTORY_URL}helm/grotesque/grotesque-${SEMVER}.tgz --username ${ARTIFACTORY_HELM_USER} --password ${ARTIFACTORY_HELM_API_KEY} --values runtime-config/values-dev.yaml --version ${SEMVER} --install --wait
+
     feature/*:
       - step:
           name: Build app
