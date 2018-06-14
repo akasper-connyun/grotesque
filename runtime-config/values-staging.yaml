@@ -10,11 +10,11 @@ service:
   internalPort: 80
 resources:
   limits:
-    cpu: 100m
-    memory: 128Mi
+    cpu: 500m
+    memory: 512Mi
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 150m
+    memory: 256Mi
 livenessProbe:
   initialDelaySeconds: 10
   periodSeconds: 10
