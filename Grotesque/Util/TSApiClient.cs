@@ -27,7 +27,7 @@ namespace Grotesque.Util
             JObject query = new JObject(
                 new JProperty("searchSpan", JObject.FromObject(searchSpan)),
                 new JProperty("predicate", generateDevicePredicate(deviceUrn)),
-                new JProperty("aggregates", generateLastValueAggregates("elementname", "String", 100, size))
+                new JProperty("aggregates", generateLastValueAggregates("ElementName", "String", 100, size))
             );
 
             return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
@@ -39,7 +39,7 @@ namespace Grotesque.Util
             JObject query = new JObject(
                 new JProperty("searchSpan", JObject.FromObject(searchSpan)),
                 new JProperty("predicate", generateDeviceElementPredicate(deviceUrn, kpi)),
-                new JProperty("aggregates", generateAvgAggregates("elementname", 100, size))
+                new JProperty("aggregates", generateAvgAggregates("ElementName", 100, size))
             );
 
             return await MakeAsyncPostRequest("aggregates", JsonConvert.SerializeObject(query));
@@ -47,13 +47,13 @@ namespace Grotesque.Util
 
         private JArray generateLastValueAggregates(string splitBy, string splitByType, int take, string bucketSize)
         {
-            LastMeasure lastValueMeasure = new LastMeasure("value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
+            LastMeasure lastValueMeasure = new LastMeasure("Value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
             return generateAggregates(splitBy, splitByType, take, bucketSize, JObject.FromObject(lastValueMeasure));
         }
 
         private JArray generateAvgAggregates(string kpi, int take, string bucketSize)
         {
-            AvgMeasure avgMeasure = new AvgMeasure("value.Value", "Double");
+            AvgMeasure avgMeasure = new AvgMeasure("Value.Value", "Double");
             return generateAggregates(kpi, "String", take, bucketSize, JObject.FromObject(avgMeasure));
         }
 
@@ -62,7 +62,7 @@ namespace Grotesque.Util
             AggregatesDimension dimension = new AggregatesDimension(splitBy, splitByType, take);
             DateDimension dateDimension = new DateDimension("$ts", bucketSize);
 
-            LastMeasure lastValueMeasure = new LastMeasure("value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
+            LastMeasure lastValueMeasure = new LastMeasure("Value.Value", "Double", "iothubeventenqueuedutctime", "DateTime");
 
             JArray aggregates = new JArray(
                 new JObject(
@@ -179,10 +179,10 @@ namespace Grotesque.Util
             return new JObject(
                 new JProperty("and", 
                     new JObject(
-                        new JProperty("eq", generateEqStringProperty("deviceurn", deviceUrn))
+                        new JProperty("eq", generateEqStringProperty("DeviceUrn", deviceUrn))
                     ),
                     new JObject(
-                        new JProperty("eq", generateEqStringProperty("elementname", elementName))
+                        new JProperty("eq", generateEqStringProperty("ElementName", elementName))
                     )
                 )
             );
@@ -190,7 +190,7 @@ namespace Grotesque.Util
 
         private JObject generateDevicePredicate(string deviceUrn)
         {
-            return new JObject(new JProperty("eq", generateEqStringProperty("deviceurn", deviceUrn)));
+            return new JObject(new JProperty("eq", generateEqStringProperty("DeviceUrn", deviceUrn)));
         }
 
         private JObject generateEqStringProperty(string property, string value)
