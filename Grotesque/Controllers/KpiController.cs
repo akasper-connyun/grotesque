@@ -100,6 +100,9 @@ namespace Grotesque.Controllers
                 return NotFound();
 
             JArray dimensions = (JArray)aggregate.GetValue("dimension");
+            if (dimensions.Count == 0)
+                return Content("[]", "application/json");
+
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray measures = (JArray)agg.GetValue("measures");
             var result = dimensions.Zip(measures, (d, m) => (d, m))
@@ -129,6 +132,9 @@ namespace Grotesque.Controllers
 
             JObject agg = (JObject)aggregate.GetValue("aggregate");
             JArray dimensions = (JArray)agg.GetValue("dimension");
+            if (dimensions.Count == 0)
+                return Content("[]", "application/json");
+
             JArray measures = (JArray)agg.GetValue("measures")?.First;
             var result = dimensions.Zip(measures, (d, m) => (d, m))
                 .Select((entry) => new TimestampValue
