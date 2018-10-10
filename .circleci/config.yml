@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    working_directory: /Grotesque
+    docker:
+      - image: microsoft/dotnet:sdk
+    environment:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+    steps:
+      - checkout
+      - run: dotnet restore
+      - run: dotnet build
